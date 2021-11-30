@@ -1,10 +1,10 @@
+require("dotenv").config();
 const express = require("express");
+const app = express();
 const bodyParser = require("body-parser");
 const dbConfig = require("./config/db.config");
 const cors = require("cors");
-const apiRoutes = require("./routes");
 const db = require("./models");
-const app = express();
 const port = process.env.PORT || 8080;
 
 const Role = db.role;
@@ -16,12 +16,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(
   bodyParser.urlencoded({
-    extended: true,
+    extended: false,
   })
 );
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 const dbPath = `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`;
 const options = { useNewUrlParser: true, useUnifiedTopology: true };
@@ -60,6 +59,16 @@ const initial = () => {
       });
 
       new Role({
+        name: "athlete",
+      }).save((err) => {
+        if (err) {
+          console.log("error", err);
+        }
+
+        console.log("added 'athlete' to roles collection");
+      });
+
+      new Role({
         name: "master",
       }).save((err) => {
         if (err) {
@@ -73,7 +82,8 @@ const initial = () => {
 };
 
 app.get("/", (req, res) => res.send("Welcome to server - Mon Coach"));
-app.use("/api", apiRoutes);
+require("./routes/auth.routes")(app);
+require("./routes/user.routes")(app);
 
 app.listen(port, () => {
   console.log("Running on port " + port);
