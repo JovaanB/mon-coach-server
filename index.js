@@ -14,13 +14,19 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
+app.all("*", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, OPTIONS, PUT");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "x-access-token,Content-Type,x-requested-with,Authorization, Accept, Origin"
+  );
+  next();
+});
 
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.text({ type: "text/*" }));
 
 const dbPath = `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`;
 const options = { useNewUrlParser: true, useUnifiedTopology: true };
