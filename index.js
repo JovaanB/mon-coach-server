@@ -1,16 +1,16 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const bodyParser = require("body-parser");
-const dbConfig = require("./config/db.config");
 const cors = require("cors");
 const db = require("./models");
-const port = process.env.PORT || 8080;
+
+const { PORT, ORIGIN, MONGODB_URI } = process.env;
+const port = PORT || 8080;
 
 const Role = db.role;
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: ORIGIN,
 };
 
 app.use(cors(corsOptions));
@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.text({ type: "text/*" }));
 
-const dbPath = `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`;
+const dbPath = MONGODB_URI;
 const options = { useNewUrlParser: true, useUnifiedTopology: true };
 db.mongoose
   .connect(dbPath, options)
