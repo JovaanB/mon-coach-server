@@ -6,6 +6,7 @@ const User = mongoose.model(
     userID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     weight: {
       type: String,

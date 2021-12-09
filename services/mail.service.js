@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  port: 465, // true for 465, false for other ports
+  port: 465,
   host: "smtp.gmail.com",
   auth: {
     user: process.env.MAIL_USER,
@@ -21,6 +21,6 @@ exports.sendMail = ({ to, subject, text, html }) => {
 
   transporter.sendMail(mailData, (err, info) => {
     if (err) console.log(err);
-    else console.log(info);
+    else console.log("Message sent: %s", info.messageId);
   });
 };

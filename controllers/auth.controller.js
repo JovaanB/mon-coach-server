@@ -6,6 +6,22 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 exports.signup = (req, res) => {
+  User.findOne(
+    {
+      email: req.body.email,
+    },
+    (err, user) => {
+      if (err) {
+        res.status(500).send({ message: err });
+        return;
+      }
+
+      if (user) {
+        res.send({ message: "Cet email est déjà utilisé." });
+      }
+    }
+  );
+
   const user = new User({
     email: req.body.email,
     firstname: req.body.firstname,

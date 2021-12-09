@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const db = require("../models");
 const ROLES = db.ROLES;
 const User = db.user;
@@ -34,9 +35,30 @@ const checkRolesExisted = (req, res, next) => {
   next();
 };
 
+const verifyToken = (req, res, next) => {
+  let token = req.query.token;
+
+  if (!token) {
+    return res.status(403).send({ message: "Pas de token." });
+  }
+
+  jwt.verify(token, process.env.AUTH_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "Non authorisé." });
+    }
+
+    req.token = token;
+    req.email = decoded.email;
+    req.user = decoded.user;
+
+    next();
+  });
+};
+
 const verifySignUp = {
   checkDuplicateEmail,
   checkRolesExisted,
+  verifyToken,
 };
 
 module.exports = verifySignUp;

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const Role = mongoose.model(
+const Invitation = mongoose.model(
   "Invitation",
   new mongoose.Schema({
     email: {
@@ -21,7 +21,7 @@ const Role = mongoose.model(
       required: true,
       default: true,
     },
-  })
+  }).set("timestamps", true)
 );
 
-module.exports = Role;
+module.exports = Invitation;
