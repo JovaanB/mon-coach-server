@@ -2,7 +2,7 @@ const { authJwt, verifySignUp } = require("../middlewares");
 const controller = require("../controllers/invitation.controller");
 
 module.exports = (app) => {
-  app.post("/api/auth/verify", controller.verify);
+  app.get("/api/auth/getInvitation", controller.getInvitation);
 
   app.post(
     "/api/auth/invite",
@@ -13,9 +13,9 @@ module.exports = (app) => {
   app.post(
     "/api/auth/join",
     [
+      verifySignUp.verifyToken,
       verifySignUp.checkDuplicateEmail,
       verifySignUp.checkRolesExisted,
-      verifySignUp.verifyToken,
     ],
     controller.joinInvitation
   );

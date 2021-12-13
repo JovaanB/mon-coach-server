@@ -5,7 +5,7 @@ const User = db.user;
 
 const checkDuplicateEmail = (req, res, next) => {
   User.findOne({
-    email: req.body.email,
+    email: req.body.email ?? req.email,
   }).exec((err, user) => {
     if (err) {
       res.status(500).send({ message: err });
@@ -16,6 +16,7 @@ const checkDuplicateEmail = (req, res, next) => {
       res
         .status(400)
         .send({ message: "Cette adresse email est déjà utilisé." });
+      return;
     }
 
     next();

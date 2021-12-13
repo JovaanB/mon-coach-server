@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const db = require("../models");
 const services = require("../services");
@@ -36,8 +37,7 @@ exports.sendInvitation = (req, res) => {
   ${firstname} ${lastname} vous invite à rejoindre l'application Mon Coach 🏋️ !
   Accédez dès à présent à l'application web, vous pourrez compléter votre profil en vue d'une séance avec votre coach. 
 
-  Pour vous connecter, suivez ce lien http://localhost:3000/join?token=${token} et utilisez cet email :
-  ${req.body.email}
+  Pour vous connecter, suivez ce lien http://localhost:3000/join?token=${token}
 
   A bientôt sur l'application Mon Coach 😀
   `;
@@ -46,8 +46,7 @@ exports.sendInvitation = (req, res) => {
   <b>${firstname} ${lastname}</b> vous invite à rejoindre l'application Mon Coach 🏋️ !<br />
   Accédez dès à présent à l'application web, vous pourrez compléter votre profil en vue d'une séance avec votre coach.<br />
   <br />
-  Pour vous connecter, suivez ce lien <a href="http://localhost:3000/join?token=${token}" rel="noreferrer" target="_blank">Mon Coach</a> et utilisez cet email :<br />
- ${req.body.email}<br />
+  Pour vous connecter, suivez ce lien <a href="http://localhost:3000/join?token=${token}" rel="noreferrer" target="_blank">Mon Coach</a> :<br />
   <br />
   A bientôt sur l'application Mon Coach 😀
   `;
@@ -75,7 +74,7 @@ exports.joinInvitation = (req, res) => {
         firstname: req.body.firstname,
         lastname: req.body.lastname,
         password: bcrypt.hashSync(req.body.password, 8),
-        userID: req.user._id,
+        userID: mongoose.Types.ObjectId(req.user.id),
       });
 
       user.save((err, user) => {
@@ -107,13 +106,22 @@ exports.joinInvitation = (req, res) => {
                 return;
               }
 
-              res.send({ message: "Nouvel athlete enregistré." });
+              invitation.active = false;
+
+              invitation.save((err) => {
+                if (err) {
+                  res.status(500).send({ message: err });
+                  return;
+                }
+
+                return res.send({ message: "Nouvel athlète enregistré." });
+              });
             });
           });
         });
       });
     } else {
-      res.send({
+      return res.send({
         message:
           "Vous n'avez pas l'autorisation ou votre invitation n'est plus valide.",
       });
@@ -121,18 +129,33 @@ exports.joinInvitation = (req, res) => {
   });
 };
 
-exports.verify = (req, res) => {
-  let token = req.body.token;
+exports.getInvitation = (req, res) => {
+  let token = req.query.token;
 
   if (!token) {
     return res.status(403).send({ message: "Pas de token." });
   }
 
-  jwt.verify(token, process.env.AUTH_KEY, (err) => {
+  Invitation.findOne({ token }, (err, invitation) => {
     if (err) {
-      return res.status(401).send({ message: "Non authorisé." });
+      res.status(500).send({ message: err });
+      return;
     }
 
-    res.send({ isVerify: true });
+    if (!invitation) {
+      res.send({
+        message: "Vous n'avez pas été invité à rejoindre l'application.",
+      });
+      return;
+    }
+
+    if (!invitation.active) {
+      res.send({
+        message: "L'invitation n'est plus valide.",
+      });
+      return;
+    }
+
+    return res.send({ isVerify: true });
   });
 };
